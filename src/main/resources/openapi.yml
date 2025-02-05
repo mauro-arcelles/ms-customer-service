@@ -1,0 +1,141 @@
+openapi: 3.0.0
+info:
+  title: Customer Service API
+  version: 1.0.0
+  description: API for managing bank customers
+
+paths:
+  /customers:
+    get:
+      operationId: getCustomers
+      summary: Get all customers
+      responses:
+        '200':
+          description: List of customers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CustomerResponse'
+    post:
+      operationId: createCustomer
+      summary: Create new customer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerRequest'
+      responses:
+        '201':
+          description: Customer created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerResponse'
+
+  /customers/{id}:
+    get:
+      operationId: getCustomer
+      summary: Get customer by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Customer found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerResponse'
+        '404':
+          description: Customer not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseBase'
+
+    put:
+      operationId: updateCustomer
+      summary: Update customer
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerRequest'
+      responses:
+        '200':
+          description: Customer updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerResponse'
+        '404':
+          description: Customer not found
+
+    delete:
+      operationId: deleteCustomer
+      summary: Delete customer
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Customer deleted
+        '404':
+          description: Customer not found
+
+components:
+  schemas:
+    CustomerRequest:
+      type: object
+      properties:
+        documentNumber:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        type:
+          type: string
+          enum: [PERSONAL, BUSINESS]
+      required:
+        - documentNumber
+        - firstName
+        - lastName
+        - type
+
+    CustomerResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        documentNumber:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        type:
+          type: string
+          enum: [PERSONAL, BUSINESS]
+
+    ResponseBase:
+      type: object
+      properties:
+        message:
+          type: string
