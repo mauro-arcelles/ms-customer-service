@@ -3,7 +3,7 @@ package com.project1.ms_customer_service;
 import com.project1.ms_customer_service.api.CustomersApiDelegate;
 import com.project1.ms_customer_service.model.CustomerRequest;
 import com.project1.ms_customer_service.model.CustomerResponse;
-import com.project1.ms_customer_service.service.CustomerService;
+import com.project1.ms_customer_service.business.CustomerService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -23,7 +23,7 @@ public class CustomerApiDelegateImpl implements CustomersApiDelegate {
     private CustomerService customerService;
 
     @Override
-    public Mono<ResponseEntity<CustomerResponse>> createCustomer(@Valid Mono<CustomerRequest> customerRequest, ServerWebExchange exchange) {
+        public Mono<ResponseEntity<CustomerResponse>> createCustomer(@Valid Mono<CustomerRequest> customerRequest, ServerWebExchange exchange) {
         return customerService.create(customerRequest)
                 .map(c -> ResponseEntity.status(HttpStatus.CREATED).body(c));
     }

@@ -34,6 +34,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CustomerResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseBase'
 
   /customers/{id}:
     get:
@@ -112,7 +118,6 @@ components:
           type: string
         type:
           type: string
-          enum: [PERSONAL, BUSINESS]
       required:
         - documentNumber
         - firstName
@@ -132,7 +137,6 @@ components:
           type: string
         type:
           type: string
-          enum: [PERSONAL, BUSINESS]
 
     ResponseBase:
       type: object

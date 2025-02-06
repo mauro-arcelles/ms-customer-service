@@ -1,10 +1,11 @@
-package com.project1.ms_customer_service.service;
+package com.project1.ms_customer_service.business;
 
 import com.project1.ms_customer_service.exception.CustomerNotFoundException;
+import com.project1.ms_customer_service.exception.InvalidCustomerTypeException;
 import com.project1.ms_customer_service.model.CustomerRequest;
 import com.project1.ms_customer_service.model.CustomerResponse;
 import com.project1.ms_customer_service.model.entity.Customer;
-import com.project1.ms_customer_service.model.entity.CustomerMapper;
+import com.project1.ms_customer_service.model.entity.CustomerType;
 import com.project1.ms_customer_service.repository.CustomerRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,21 +25,24 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public Flux<CustomerResponse> findAll() {
-        return customerRepository.findAll().map(c -> customerMapper.getCustomerResponse(c));
+        return customerRepository.findAll()
+                .map(customerMapper::getCustomerResponse);
     }
 
     @Override
     public Mono<CustomerResponse> findById(String id) {
         return customerRepository.findById(id)
-                .map(c -> customerMapper.getCustomerResponse(c))
+                .map(customerMapper::getCustomerResponse)
                 .switchIfEmpty(Mono.error(new CustomerNotFoundException("Customer not found with id: " + id)));
     }
 
     @Override
     public Mono<CustomerResponse> create(Mono<CustomerRequest> request) {
-        Mono<Customer> customerEntity = request.map(c -> customerMapper.getCustomerEntity(c, null));
-        return customerEntity.flatMap(ce -> customerRepository.save(ce))
-                .map(c -> customerMapper.getCustomerResponse(c));
+        return request.filter(req -> isValidCustomerType(req.getType()))
+                .switchIfEmpty(Mono.error(new InvalidCustomerTypeException("Customer type should be one of: PERSONAL|BUSINESS")))
+                .map(req -> customerMapper.getCustomerEntity(req, null))
+                .flatMap(customerRepository::save)
+                .map(customerMapper::getCustomerResponse);
     }
 
     @Override
@@ -58,5 +62,14 @@ public class CustomerServiceImpl implements CustomerService {
 //                .switchIfEmpty(Mono.error(new CustomerNotFoundException("Customer not found with id: " + id)))
                 .flatMap(customer -> customerRepository.delete(customer)
                         .doOnSuccess(v -> log.info("Deleted customer: {}", id)));
+    }
+
+    private boolean isValidCustomerType(String customerType) {
+        try {
+            CustomerType.valueOf(customerType);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 }
