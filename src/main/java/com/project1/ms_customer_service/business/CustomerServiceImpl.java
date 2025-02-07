@@ -48,7 +48,6 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public Mono<CustomerResponse> update(String id, CustomerRequest request) {
         return customerRepository.findById(id)
-//                .switchIfEmpty(Mono.error(new CustomerNotFoundException("Customer not found with id: " + id)))
                 .flatMap(existingCustomer -> {
                     Mono<Customer> savedCustomer = customerRepository.save(customerMapper.getCustomerEntity(request, id))
                             .doOnSuccess(c -> log.info("Updated customer: {}", c.getId()));
@@ -59,7 +58,6 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public Mono<Void> delete(String id) {
         return customerRepository.findById(id)
-//                .switchIfEmpty(Mono.error(new CustomerNotFoundException("Customer not found with id: " + id)))
                 .flatMap(customer -> customerRepository.delete(customer)
                         .doOnSuccess(v -> log.info("Deleted customer: {}", id)));
     }
