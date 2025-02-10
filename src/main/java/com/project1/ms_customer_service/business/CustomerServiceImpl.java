@@ -6,7 +6,9 @@ import com.project1.ms_customer_service.model.CustomerPatchRequest;
 import com.project1.ms_customer_service.model.CustomerRequest;
 import com.project1.ms_customer_service.model.CustomerResponse;
 import com.project1.ms_customer_service.model.entity.CustomerType;
+import com.project1.ms_customer_service.repository.BusinessCustomerRepository;
 import com.project1.ms_customer_service.repository.CustomerRepository;
+import com.project1.ms_customer_service.repository.PersonalCustomerRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,6 +24,12 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Autowired
     private CustomerMapper customerMapper;
+
+    @Autowired
+    private BusinessCustomerRepository businessCustomerRepository;
+
+    @Autowired
+    private PersonalCustomerRepository personalCustomerRepository;
 
     @Override
     public Flux<CustomerResponse> findAll() {
@@ -63,6 +71,20 @@ public class CustomerServiceImpl implements CustomerService {
                 .switchIfEmpty(Mono.error(new CustomerNotFoundException("Customer not found with id: " + id)))
                 .flatMap(customer -> customerRepository.delete(customer))
                 .doOnSuccess(v -> log.info("Deleted customer: {}", id));
+    }
+
+    @Override
+    public Mono<CustomerResponse> findByRuc(String ruc) {
+        return businessCustomerRepository.findByRuc(ruc)
+                .switchIfEmpty(Mono.error(new CustomerNotFoundException("Customer not found with ruc: " + ruc)))
+                .map(customerMapper::getCustomerResponse);
+    }
+
+    @Override
+    public Mono<CustomerResponse> findByDni(String dni) {
+        return personalCustomerRepository.findByDocumentNumber(dni)
+                .switchIfEmpty(Mono.error(new CustomerNotFoundException("Customer not found with dni: " + dni)))
+                .map(customerMapper::getCustomerResponse);
     }
 
     private boolean isValidCustomerType(String customerType) {

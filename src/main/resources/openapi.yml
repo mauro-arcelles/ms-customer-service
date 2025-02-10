@@ -67,7 +67,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ResponseBase'
-
     patch:
       operationId: updateCustomer
       summary: Update customer
@@ -92,7 +91,6 @@ paths:
                 $ref: '#/components/schemas/CustomerResponse'
         '404':
           description: Customer not found
-
     delete:
       operationId: deleteCustomer
       summary: Delete customer
@@ -107,6 +105,54 @@ paths:
           description: Customer deleted
         '404':
           description: Customer not found
+
+  /customers/ruc/{ruc}:
+    get:
+      operationId: getCustomerByRuc
+      summary: Get customer by ruc
+      parameters:
+        - name: ruc
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Customer found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerResponse'
+        '404':
+          description: Customer not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseBase'
+
+  /customers/dni/{dni}:
+    get:
+      operationId: getCustomerByDni
+      summary: Get customer by dni
+      parameters:
+        - name: dni
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Customer found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerResponse'
+        '404':
+          description: Customer not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseBase'
 
 components:
   schemas:

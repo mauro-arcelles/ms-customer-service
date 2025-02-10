@@ -48,4 +48,14 @@ public class CustomerApiDelegateImpl implements CustomersApiDelegate {
     public Mono<ResponseEntity<CustomerResponse>> updateCustomer(String id, Mono<CustomerPatchRequest> customerPatchRequest, ServerWebExchange exchange) {
         return customerService.update(id, customerPatchRequest).map(ResponseEntity::ok);
     }
+
+    @Override
+    public Mono<ResponseEntity<CustomerResponse>> getCustomerByDni(String dni, ServerWebExchange exchange) {
+        return customerService.findByDni(dni).map(ResponseEntity::ok);
+    }
+
+    @Override
+    public Mono<ResponseEntity<CustomerResponse>> getCustomerByRuc(String ruc, ServerWebExchange exchange) {
+        return customerService.findByRuc(ruc).map(ResponseEntity::ok);
+    }
 }
