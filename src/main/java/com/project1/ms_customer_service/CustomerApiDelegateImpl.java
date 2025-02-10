@@ -1,6 +1,7 @@
 package com.project1.ms_customer_service;
 
 import com.project1.ms_customer_service.api.CustomersApiDelegate;
+import com.project1.ms_customer_service.model.CustomerPatchRequest;
 import com.project1.ms_customer_service.model.CustomerRequest;
 import com.project1.ms_customer_service.model.CustomerResponse;
 import com.project1.ms_customer_service.business.CustomerService;
@@ -30,7 +31,7 @@ public class CustomerApiDelegateImpl implements CustomersApiDelegate {
 
     @Override
     public Mono<ResponseEntity<Void>> deleteCustomer(String id, ServerWebExchange exchange) {
-        return CustomersApiDelegate.super.deleteCustomer(id, exchange);
+        return customerService.delete(id).map(ResponseEntity::ok);
     }
 
     @Override
@@ -44,7 +45,7 @@ public class CustomerApiDelegateImpl implements CustomersApiDelegate {
     }
 
     @Override
-    public Mono<ResponseEntity<CustomerResponse>> updateCustomer(String id, Mono<CustomerRequest> customerRequest, ServerWebExchange exchange) {
-        return CustomersApiDelegate.super.updateCustomer(id, customerRequest, exchange);
+    public Mono<ResponseEntity<CustomerResponse>> updateCustomer(String id, Mono<CustomerPatchRequest> customerPatchRequest, ServerWebExchange exchange) {
+        return customerService.update(id, customerPatchRequest).map(ResponseEntity::ok);
     }
 }

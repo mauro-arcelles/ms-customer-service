@@ -68,7 +68,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ResponseBase'
 
-    put:
+    patch:
       operationId: updateCustomer
       summary: Update customer
       parameters:
@@ -82,7 +82,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CustomerRequest'
+              $ref: '#/components/schemas/CustomerPatchRequest'
       responses:
         '200':
           description: Customer updated
@@ -126,6 +126,14 @@ components:
         - firstName
         - lastName
         - type
+
+    CustomerPatchRequest:
+      type: object
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
 
     CustomerResponse:
       type: object

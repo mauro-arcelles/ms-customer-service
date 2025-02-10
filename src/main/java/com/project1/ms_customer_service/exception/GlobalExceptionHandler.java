@@ -50,4 +50,12 @@ public class GlobalExceptionHandler {
         return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(responseBase));
     }
+
+    @ExceptionHandler(BadRequestException.class)
+    public Mono<ResponseEntity<ResponseBase>> handleBadRequestException(Exception ex) {
+        ResponseBase responseBase = new ResponseBase();
+        responseBase.setMessage(ex.getMessage());
+        return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(responseBase));
+    }
 }
