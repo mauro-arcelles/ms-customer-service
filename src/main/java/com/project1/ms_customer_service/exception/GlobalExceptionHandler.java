@@ -35,7 +35,7 @@ public class GlobalExceptionHandler {
     public Mono<ResponseEntity<String>> handleGenericError(Exception ex) {
         ex.printStackTrace();
         return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("Internal Server Error rrrr"));
+                .body("Internal Server Error"));
     }
 
     @ExceptionHandler(CustomerNotFoundException.class)
