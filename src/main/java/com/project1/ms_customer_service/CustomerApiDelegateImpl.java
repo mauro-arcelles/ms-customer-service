@@ -24,7 +24,7 @@ public class CustomerApiDelegateImpl implements CustomersApiDelegate {
     private CustomerService customerService;
 
     @Override
-        public Mono<ResponseEntity<CustomerResponse>> createCustomer(@Valid Mono<CustomerRequest> customerRequest, ServerWebExchange exchange) {
+    public Mono<ResponseEntity<CustomerResponse>> createCustomer(Mono<CustomerRequest> customerRequest, ServerWebExchange exchange) {
         return customerService.create(customerRequest)
                 .map(c -> ResponseEntity.status(HttpStatus.CREATED).body(c));
     }

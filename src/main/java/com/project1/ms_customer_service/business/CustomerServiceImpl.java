@@ -5,7 +5,6 @@ import com.project1.ms_customer_service.exception.InvalidCustomerTypeException;
 import com.project1.ms_customer_service.model.CustomerPatchRequest;
 import com.project1.ms_customer_service.model.CustomerRequest;
 import com.project1.ms_customer_service.model.CustomerResponse;
-import com.project1.ms_customer_service.model.entity.Customer;
 import com.project1.ms_customer_service.model.entity.CustomerType;
 import com.project1.ms_customer_service.repository.CustomerRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -39,8 +38,9 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public Mono<CustomerResponse> create(Mono<CustomerRequest> request) {
-        return request.filter(req -> isValidCustomerType(req.getType()))
-                .switchIfEmpty(Mono.error(new InvalidCustomerTypeException("Customer type should be one of: PERSONAL|BUSINESS")))
+        return request
+                .filter(req -> isValidCustomerType(req.getType()))
+                .switchIfEmpty(Mono.error(new InvalidCustomerTypeException()))
                 .map(req -> customerMapper.getCustomerEntity(req, null))
                 .flatMap(customerRepository::save)
                 .map(customerMapper::getCustomerResponse);
@@ -61,8 +61,8 @@ public class CustomerServiceImpl implements CustomerService {
     public Mono<Void> delete(String id) {
         return customerRepository.findById(id)
                 .switchIfEmpty(Mono.error(new CustomerNotFoundException("Customer not found with id: " + id)))
-                .flatMap(customer -> customerRepository.delete(customer)
-                        .doOnSuccess(v -> log.info("Deleted customer: {}", id)));
+                .flatMap(customer -> customerRepository.delete(customer))
+                .doOnSuccess(v -> log.info("Deleted customer: {}", id));
     }
 
     private boolean isValidCustomerType(String customerType) {

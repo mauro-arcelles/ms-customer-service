@@ -103,7 +103,7 @@ paths:
           schema:
             type: string
       responses:
-        '204':
+        '200':
           description: Customer deleted
         '404':
           description: Customer not found
@@ -111,6 +111,16 @@ paths:
 components:
   schemas:
     CustomerRequest:
+      oneOf:
+        - $ref: '#/components/schemas/PersonalCustomer'
+        - $ref: '#/components/schemas/BusinessCustomer'
+      discriminator:
+        propertyName: type
+        mapping:
+          PERSONAL: '#/components/schemas/PersonalCustomer'
+          BUSINESS: '#/components/schemas/BusinessCustomer'
+
+    PersonalCustomer:
       type: object
       properties:
         documentNumber:
@@ -127,12 +137,30 @@ components:
         - lastName
         - type
 
+    BusinessCustomer:
+      type: object
+      properties:
+        ruc:
+          type: string
+        businessName:
+          type: string
+        type:
+          type: string
+      required:
+        - ruc
+        - businessName
+        - type
+
     CustomerPatchRequest:
       type: object
       properties:
         firstName:
           type: string
         lastName:
+          type: string
+        ruc:
+          type: string
+        businessName:
           type: string
 
     CustomerResponse:
@@ -141,6 +169,10 @@ components:
         id:
           type: string
         documentNumber:
+          type: string
+        ruc:
+          type: string
+        businessName:
           type: string
         firstName:
           type: string
