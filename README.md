@@ -17,4 +17,5 @@ spring.application.name=ms-customer-service
 spring.config.import=optional:configserver:http://localhost:8888
 ```
 
-![ms-customer-service](https://github.com/user-attachments/assets/1949bd27-a3b7-4d60-a2e9-d1d0141599e4)
+![ms-customer-service-v2-2025-02-11-193301](https://github.com/user-attachments/assets/203bbe02-e5dc-44fe-8ebe-fa8e3aea9444)
+
