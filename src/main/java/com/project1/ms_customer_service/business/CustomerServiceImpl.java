@@ -1,10 +1,14 @@
 package com.project1.ms_customer_service.business;
 
+import com.project1.ms_customer_service.exception.BadRequestException;
 import com.project1.ms_customer_service.exception.CustomerNotFoundException;
 import com.project1.ms_customer_service.exception.InvalidCustomerTypeException;
 import com.project1.ms_customer_service.model.CustomerPatchRequest;
 import com.project1.ms_customer_service.model.CustomerRequest;
 import com.project1.ms_customer_service.model.CustomerResponse;
+import com.project1.ms_customer_service.model.PersonalCustomer;
+import com.project1.ms_customer_service.model.BusinessCustomer;
+import com.project1.ms_customer_service.model.entity.CustomerStatus;
 import com.project1.ms_customer_service.model.entity.CustomerType;
 import com.project1.ms_customer_service.repository.BusinessCustomerRepository;
 import com.project1.ms_customer_service.repository.CustomerRepository;
@@ -47,11 +51,33 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public Mono<CustomerResponse> create(Mono<CustomerRequest> request) {
         return request
-                .filter(req -> isValidCustomerType(req.getType()))
+                .filter(this::isValidCustomerType)
                 .switchIfEmpty(Mono.error(new InvalidCustomerTypeException()))
-                .map(req -> customerMapper.getCustomerEntity(req, null))
+                .flatMap(this::validateCustomerExists)
+                .map(customerMapper::getCustomerEntity)
                 .flatMap(customerRepository::save)
                 .map(customerMapper::getCustomerResponse);
+    }
+
+    /**
+     * Validates if a customer already exists based on their type
+     * @param customer The customer request to validate
+     * @return A Mono of CustomerRequest if validation passes
+     * @throws BadRequestException if a PERSONAL customer with same document number exists
+     * @throws BadRequestException if a BUSINESS customer with same RUC exists
+     */
+    private Mono<CustomerRequest> validateCustomerExists(CustomerRequest customer) {
+        if (customer.getType().equals(CustomerType.PERSONAL.toString())) {
+            PersonalCustomer personalCustomer = (PersonalCustomer) customer;
+            return personalCustomerRepository.findByDocumentNumber(personalCustomer.getDocumentNumber())
+                    .flatMap(pc -> Mono.error(new BadRequestException("PERSONAL customer already exists with document number: " + personalCustomer.getDocumentNumber())))
+                    .then(Mono.just(customer));
+        } else {
+            BusinessCustomer businessCustomer = (BusinessCustomer) customer;
+            return businessCustomerRepository.findByRuc(businessCustomer.getRuc())
+                    .flatMap(bc -> Mono.error(new BadRequestException("BUSINESS customer already exists with ruc: " + businessCustomer.getRuc())))
+                    .then(Mono.just(customer));
+        }
     }
 
     @Override
@@ -69,7 +95,11 @@ public class CustomerServiceImpl implements CustomerService {
     public Mono<Void> delete(String id) {
         return customerRepository.findById(id)
                 .switchIfEmpty(Mono.error(new CustomerNotFoundException("Customer not found with id: " + id)))
-                .flatMap(customer -> customerRepository.delete(customer))
+                .flatMap(customer -> {
+                    customer.setStatus(CustomerStatus.INACTIVE);
+                    return customerRepository.save(customer);
+                })
+                .then()
                 .doOnSuccess(v -> log.info("Deleted customer: {}", id));
     }
 
@@ -87,9 +117,15 @@ public class CustomerServiceImpl implements CustomerService {
                 .map(customerMapper::getCustomerResponse);
     }
 
-    private boolean isValidCustomerType(String customerType) {
+    /**
+     * Validates if the customer type is a valid enum value
+     * @param request The customer request containing the type to validate
+     * @return true if type is valid, false otherwise
+     * @see CustomerType
+     */
+    private boolean isValidCustomerType(CustomerRequest request) {
         try {
-            CustomerType.valueOf(customerType);
+            CustomerType.valueOf(request.getType());
             return true;
         } catch (IllegalArgumentException e) {
             return false;

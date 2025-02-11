@@ -5,10 +5,7 @@ import com.project1.ms_customer_service.exception.InvalidCustomerTypeException;
 import com.project1.ms_customer_service.model.CustomerPatchRequest;
 import com.project1.ms_customer_service.model.CustomerRequest;
 import com.project1.ms_customer_service.model.CustomerResponse;
-import com.project1.ms_customer_service.model.entity.BusinessCustomer;
-import com.project1.ms_customer_service.model.entity.Customer;
-import com.project1.ms_customer_service.model.entity.CustomerType;
-import com.project1.ms_customer_service.model.entity.PersonalCustomer;
+import com.project1.ms_customer_service.model.entity.*;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -19,6 +16,7 @@ public class CustomerMapper {
         CustomerResponse response = new CustomerResponse();
         response.setId(customer.getId());
         response.setType(customer.getType().name());
+        response.setStatus(customer.getStatus().toString());
         if (customer.getType().equals(CustomerType.PERSONAL)) {
             response.setDocumentNumber(((PersonalCustomer) customer).getDocumentNumber());
             response.setFirstName(((PersonalCustomer) customer).getFirstName());
@@ -30,27 +28,27 @@ public class CustomerMapper {
         return response;
     }
 
-    public Customer getCustomerEntity(CustomerRequest request, String id) {
+    public Customer getCustomerEntity(CustomerRequest request) {
         CustomerType type = CustomerType.valueOf(request.getType());
 
         switch(type) {
             case PERSONAL:
                 com.project1.ms_customer_service.model.PersonalCustomer personalCustomer = (com.project1.ms_customer_service.model.PersonalCustomer) request;
                 return PersonalCustomer.builder()
-                        .id(id)
                         .type(CustomerType.PERSONAL)
                         .documentNumber(personalCustomer.getDocumentNumber())
                         .firstName(personalCustomer.getFirstName())
                         .lastName(personalCustomer.getLastName())
+                        .status(CustomerStatus.ACTIVE)
                         .build();
 
             case BUSINESS:
                 com.project1.ms_customer_service.model.BusinessCustomer businessCustomer = (com.project1.ms_customer_service.model.BusinessCustomer) request;
                 return BusinessCustomer.builder()
-                        .id(id)
                         .type(CustomerType.BUSINESS)
                         .ruc(businessCustomer.getRuc())
                         .businessName(businessCustomer.getBusinessName())
+                        .status(CustomerStatus.ACTIVE)
                         .build();
 
             default:
