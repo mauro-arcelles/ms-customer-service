@@ -114,7 +114,8 @@ public class CustomerServiceImpl implements CustomerService {
     public Mono<CustomerResponse> findByDni(String dni) {
         return personalCustomerRepository.findByDocumentNumber(dni)
                 .switchIfEmpty(Mono.error(new CustomerNotFoundException("Customer not found with dni: " + dni)))
-                .map(customerMapper::getCustomerResponse);
+                .map(customerMapper::getCustomerResponse)
+                .doOnError(e -> log.error("Error when trying to get customer by id"));
     }
 
     /**

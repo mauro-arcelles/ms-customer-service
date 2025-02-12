@@ -36,7 +36,7 @@ public class CustomerApiDelegateImpl implements CustomersApiDelegate {
 
     @Override
     public Mono<ResponseEntity<CustomerResponse>> getCustomer(String id, ServerWebExchange exchange) {
-        return customerService.findById(id).map(c -> ResponseEntity.ok().body(c));
+        return customerService.findById(id).map(ResponseEntity::ok);
     }
 
     @Override
