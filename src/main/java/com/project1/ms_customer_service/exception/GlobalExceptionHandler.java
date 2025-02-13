@@ -1,5 +1,6 @@
 package com.project1.ms_customer_service.exception;
 
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
 import com.project1.ms_customer_service.model.ResponseBase;
 import org.springframework.core.codec.DecodingException;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.support.WebExchangeBindException;
 import org.springframework.web.server.ServerWebInputException;
 import reactor.core.publisher.Mono;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -63,17 +65,19 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(ServerWebInputException.class)
-    public Mono<ResponseEntity<ResponseBase>> handleServerWebInputException(ServerWebInputException ex) {
-        ResponseBase responseBase = new ResponseBase();
+    public Mono<ResponseEntity<Map<String, List<String>>>> handleServerWebInputException(ServerWebInputException ex) {
+        Map<String, List<String>> errors = new HashMap<>();
 
-        if (ex.getCause() instanceof DecodingException &&
-                ex.getCause().getCause() instanceof InvalidTypeIdException) {
-            responseBase.setMessage("Invalid customer type. Must be PERSONAL or BUSINESS");
-        } else {
-            responseBase.setMessage("Invalid request format");
+        if (ex.getCause() instanceof DecodingException) {
+            DecodingException decodingException = (DecodingException) ex.getCause();
+            if (decodingException.getCause() instanceof InvalidFormatException) {
+                InvalidFormatException invalidFormatException = (InvalidFormatException) decodingException.getCause();
+                String fieldName = invalidFormatException.getPath().get(0).getFieldName();
+                String targetType = invalidFormatException.getTargetType().getSimpleName();
+                errors.put(fieldName, List.of("Must be a valid " + targetType.toLowerCase()));
+            }
         }
 
-        return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(responseBase));
+        return Mono.just(ResponseEntity.badRequest().body(errors));
     }
 }
