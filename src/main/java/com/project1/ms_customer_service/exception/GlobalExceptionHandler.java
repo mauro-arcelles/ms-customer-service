@@ -2,6 +2,7 @@ package com.project1.ms_customer_service.exception;
 
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
+import com.project1.ms_customer_service.model.CustomerRequest;
 import com.project1.ms_customer_service.model.ResponseBase;
 import org.springframework.core.codec.DecodingException;
 import org.springframework.http.HttpStatus;
@@ -75,6 +76,13 @@ public class GlobalExceptionHandler {
                 String fieldName = invalidFormatException.getPath().get(0).getFieldName();
                 String targetType = invalidFormatException.getTargetType().getSimpleName();
                 errors.put(fieldName, List.of("Must be a valid " + targetType.toLowerCase()));
+            }
+            if (decodingException.getCause() instanceof InvalidTypeIdException) {
+                if (ex.getMessage().contains(CustomerRequest.class.getName())) {
+                    errors.put("type", List.of("Invalid account type. Should be one of: PERSONAL|BUSINESS"));
+                } else {
+                    errors.put("type", List.of("Invalid type provided: " + ex.getMessage()));
+                }
             }
         }
 
