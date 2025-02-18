@@ -18,12 +18,20 @@ public class CustomerMapper {
         response.setType(customer.getType().name());
         response.setStatus(customer.getStatus().toString());
         if (customer.getType().equals(CustomerType.PERSONAL)) {
-            response.setDocumentNumber(((PersonalCustomer) customer).getDocumentNumber());
-            response.setFirstName(((PersonalCustomer) customer).getFirstName());
-            response.setLastName(((PersonalCustomer) customer).getLastName());
+            PersonalCustomer personalCustomer = (PersonalCustomer) customer;
+            response.setDocumentNumber(personalCustomer.getDocumentNumber());
+            response.setFirstName(personalCustomer.getFirstName());
+            response.setLastName(personalCustomer.getLastName());
+            response.setSubType(Optional.ofNullable(personalCustomer.getSubType())
+                    .map(Object::toString)
+                    .orElse(null));
         }
         if (customer.getType().equals(CustomerType.BUSINESS)) {
-            response.setRuc(((BusinessCustomer) customer).getRuc());
+            BusinessCustomer businessCustomer = (BusinessCustomer) customer;
+            response.setRuc(businessCustomer.getRuc());
+            response.setSubType(Optional.ofNullable(businessCustomer.getSubType())
+                    .map(Object::toString)
+                    .orElse(null));
         }
         return response;
     }
@@ -40,6 +48,7 @@ public class CustomerMapper {
                         .firstName(personalCustomer.getFirstName())
                         .lastName(personalCustomer.getLastName())
                         .status(CustomerStatus.ACTIVE)
+                        .subType(personalCustomer.getSubType() != null ? PersonalCustomerType.valueOf(personalCustomer.getSubType()) : null)
                         .build();
 
             case BUSINESS:
@@ -49,6 +58,7 @@ public class CustomerMapper {
                         .ruc(businessCustomer.getRuc())
                         .businessName(businessCustomer.getBusinessName())
                         .status(CustomerStatus.ACTIVE)
+                        .subType(businessCustomer.getSubType() != null ? BusinessCustomerType.valueOf(businessCustomer.getSubType()) : null)
                         .build();
 
             default:

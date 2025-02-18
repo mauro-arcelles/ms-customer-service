@@ -177,6 +177,10 @@ components:
           type: string
         type:
           type: string
+        subType:
+          type: string
+          x-field-extra-annotation: >-
+            @com.project1.ms_customer_service.validation.ValidPersonalSubType
       required:
         - documentNumber
         - firstName
@@ -192,6 +196,10 @@ components:
           type: string
         type:
           type: string
+        subType:
+          type: string
+          x-field-extra-annotation: >-
+            @com.project1.ms_customer_service.validation.ValidBusinessSubType
       required:
         - ruc
         - businessName
@@ -227,6 +235,8 @@ components:
         type:
           type: string
         status:
+          type: string
+        subType:
           type: string
 
     ResponseBase:
