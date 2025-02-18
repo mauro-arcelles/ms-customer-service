@@ -12,10 +12,22 @@ Spring Boot Webflux microservice that handles customer operations.
 - Swagger ui
 
 ## Configuration
-Service connects to Config Server for properties:
+Service connects to Config Server using:
 ```properties
 spring.application.name=ms-customer-service
 spring.config.import=optional:configserver:http://localhost:8888
+```
+for properties
+```yaml
+spring:
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      database: ms-customer-service
+
+server:
+  port: 8090
 ```
 
 ## Swagger
