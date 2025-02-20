@@ -8,10 +8,16 @@ import reactor.core.publisher.Mono;
 
 public interface CustomerService {
     Flux<CustomerResponse> findAll();
+
     Mono<CustomerResponse> findById(String id);
+
     Mono<CustomerResponse> create(Mono<CustomerRequest> request);
+
     Mono<CustomerResponse> update(String id, Mono<CustomerPatchRequest> request);
+
     Mono<Void> delete(String id);
+
     Mono<CustomerResponse> findByRuc(String ruc);
+
     Mono<CustomerResponse> findByDni(String dni);
 }

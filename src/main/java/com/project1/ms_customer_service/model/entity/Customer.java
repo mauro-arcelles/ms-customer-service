@@ -17,6 +17,8 @@ import lombok.Data;
 public class Customer {
     @Id
     private String id;
+
     private CustomerType type;
+
     private CustomerStatus status;
 }

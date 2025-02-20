@@ -13,7 +13,9 @@ import org.springframework.data.annotation.TypeAlias;
 @TypeAlias("businessCustomer")
 public class BusinessCustomer extends Customer {
     private String ruc;
+
     private String businessName;
+
     @ValidBusinessSubType
     private BusinessCustomerType subType;
 }

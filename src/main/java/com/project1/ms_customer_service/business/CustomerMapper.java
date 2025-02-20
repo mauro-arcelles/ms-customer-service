@@ -23,15 +23,15 @@ public class CustomerMapper {
             response.setFirstName(personalCustomer.getFirstName());
             response.setLastName(personalCustomer.getLastName());
             response.setSubType(Optional.ofNullable(personalCustomer.getSubType())
-                    .map(Object::toString)
-                    .orElse(null));
+                .map(Object::toString)
+                .orElse(null));
         }
         if (customer.getType().equals(CustomerType.BUSINESS)) {
             BusinessCustomer businessCustomer = (BusinessCustomer) customer;
             response.setRuc(businessCustomer.getRuc());
             response.setSubType(Optional.ofNullable(businessCustomer.getSubType())
-                    .map(Object::toString)
-                    .orElse(null));
+                .map(Object::toString)
+                .orElse(null));
         }
         return response;
     }
@@ -39,27 +39,27 @@ public class CustomerMapper {
     public Customer getCustomerEntity(CustomerRequest request) {
         CustomerType type = CustomerType.valueOf(request.getType());
 
-        switch(type) {
+        switch (type) {
             case PERSONAL:
                 com.project1.ms_customer_service.model.PersonalCustomer personalCustomer = (com.project1.ms_customer_service.model.PersonalCustomer) request;
                 return PersonalCustomer.builder()
-                        .type(CustomerType.PERSONAL)
-                        .documentNumber(personalCustomer.getDocumentNumber())
-                        .firstName(personalCustomer.getFirstName())
-                        .lastName(personalCustomer.getLastName())
-                        .status(CustomerStatus.ACTIVE)
-                        .subType(personalCustomer.getSubType() != null ? PersonalCustomerType.valueOf(personalCustomer.getSubType()) : null)
-                        .build();
+                    .type(CustomerType.PERSONAL)
+                    .documentNumber(personalCustomer.getDocumentNumber())
+                    .firstName(personalCustomer.getFirstName())
+                    .lastName(personalCustomer.getLastName())
+                    .status(CustomerStatus.ACTIVE)
+                    .subType(personalCustomer.getSubType() != null ? PersonalCustomerType.valueOf(personalCustomer.getSubType()) : null)
+                    .build();
 
             case BUSINESS:
                 com.project1.ms_customer_service.model.BusinessCustomer businessCustomer = (com.project1.ms_customer_service.model.BusinessCustomer) request;
                 return BusinessCustomer.builder()
-                        .type(CustomerType.BUSINESS)
-                        .ruc(businessCustomer.getRuc())
-                        .businessName(businessCustomer.getBusinessName())
-                        .status(CustomerStatus.ACTIVE)
-                        .subType(businessCustomer.getSubType() != null ? BusinessCustomerType.valueOf(businessCustomer.getSubType()) : null)
-                        .build();
+                    .type(CustomerType.BUSINESS)
+                    .ruc(businessCustomer.getRuc())
+                    .businessName(businessCustomer.getBusinessName())
+                    .status(CustomerStatus.ACTIVE)
+                    .subType(businessCustomer.getSubType() != null ? BusinessCustomerType.valueOf(businessCustomer.getSubType()) : null)
+                    .build();
 
             default:
                 throw new InvalidCustomerTypeException();

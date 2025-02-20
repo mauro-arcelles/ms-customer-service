@@ -38,29 +38,30 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public Flux<CustomerResponse> findAll() {
         return customerRepository.findAll()
-                .map(customerMapper::getCustomerResponse);
+            .map(customerMapper::getCustomerResponse);
     }
 
     @Override
     public Mono<CustomerResponse> findById(String id) {
         return customerRepository.findById(id)
-                .map(customerMapper::getCustomerResponse)
-                .switchIfEmpty(Mono.error(new CustomerNotFoundException("Customer not found with id: " + id)));
+            .map(customerMapper::getCustomerResponse)
+            .switchIfEmpty(Mono.error(new CustomerNotFoundException("Customer not found with id: " + id)));
     }
 
     @Override
     public Mono<CustomerResponse> create(Mono<CustomerRequest> request) {
         return request
-                .filter(this::isValidCustomerType)
-                .switchIfEmpty(Mono.error(new InvalidCustomerTypeException()))
-                .flatMap(this::validateCustomerExists)
-                .map(customerMapper::getCustomerEntity)
-                .flatMap(customerRepository::save)
-                .map(customerMapper::getCustomerResponse);
+            .filter(this::isValidCustomerType)
+            .switchIfEmpty(Mono.error(new InvalidCustomerTypeException()))
+            .flatMap(this::validateCustomerExists)
+            .map(customerMapper::getCustomerEntity)
+            .flatMap(customerRepository::save)
+            .map(customerMapper::getCustomerResponse);
     }
 
     /**
      * Validates if a customer already exists based on their type
+     *
      * @param customer The customer request to validate
      * @return A Mono of CustomerRequest if validation passes
      * @throws BadRequestException if a PERSONAL customer with same document number exists
@@ -70,56 +71,58 @@ public class CustomerServiceImpl implements CustomerService {
         if (customer.getType().equals(CustomerType.PERSONAL.toString())) {
             PersonalCustomer personalCustomer = (PersonalCustomer) customer;
             return personalCustomerRepository.findByDocumentNumber(personalCustomer.getDocumentNumber())
-                    .flatMap(pc -> Mono.error(new BadRequestException("PERSONAL customer already exists with document number: " + personalCustomer.getDocumentNumber())))
-                    .then(Mono.just(customer));
+                .flatMap(
+                    pc -> Mono.error(new BadRequestException("PERSONAL customer already exists with document number: " + personalCustomer.getDocumentNumber())))
+                .then(Mono.just(customer));
         } else {
             BusinessCustomer businessCustomer = (BusinessCustomer) customer;
             return businessCustomerRepository.findByRuc(businessCustomer.getRuc())
-                    .flatMap(bc -> Mono.error(new BadRequestException("BUSINESS customer already exists with ruc: " + businessCustomer.getRuc())))
-                    .then(Mono.just(customer));
+                .flatMap(bc -> Mono.error(new BadRequestException("BUSINESS customer already exists with ruc: " + businessCustomer.getRuc())))
+                .then(Mono.just(customer));
         }
     }
 
     @Override
     public Mono<CustomerResponse> update(String id, Mono<CustomerPatchRequest> request) {
         return customerRepository.findById(id)
-                .switchIfEmpty(Mono.error(new CustomerNotFoundException("Customer not found with id: " + id)))
-                .flatMap(existingCustomer -> request
-                        .flatMap(req -> customerRepository.save(customerMapper.getCustomerUpdateEntity(req, existingCustomer)))
-                        .doOnSuccess(c -> log.info("Updated customer: {}", c.getId()))
-                        .map(customerMapper::getCustomerResponse)
-                );
+            .switchIfEmpty(Mono.error(new CustomerNotFoundException("Customer not found with id: " + id)))
+            .flatMap(existingCustomer -> request
+                .flatMap(req -> customerRepository.save(customerMapper.getCustomerUpdateEntity(req, existingCustomer)))
+                .doOnSuccess(c -> log.info("Updated customer: {}", c.getId()))
+                .map(customerMapper::getCustomerResponse)
+            );
     }
 
     @Override
     public Mono<Void> delete(String id) {
         return customerRepository.findById(id)
-                .switchIfEmpty(Mono.error(new CustomerNotFoundException("Customer not found with id: " + id)))
-                .flatMap(customer -> {
-                    customer.setStatus(CustomerStatus.INACTIVE);
-                    return customerRepository.save(customer);
-                })
-                .then()
-                .doOnSuccess(v -> log.info("Deleted customer: {}", id));
+            .switchIfEmpty(Mono.error(new CustomerNotFoundException("Customer not found with id: " + id)))
+            .flatMap(customer -> {
+                customer.setStatus(CustomerStatus.INACTIVE);
+                return customerRepository.save(customer);
+            })
+            .then()
+            .doOnSuccess(v -> log.info("Deleted customer: {}", id));
     }
 
     @Override
     public Mono<CustomerResponse> findByRuc(String ruc) {
         return businessCustomerRepository.findByRuc(ruc)
-                .switchIfEmpty(Mono.error(new CustomerNotFoundException("Customer not found with ruc: " + ruc)))
-                .map(customerMapper::getCustomerResponse);
+            .switchIfEmpty(Mono.error(new CustomerNotFoundException("Customer not found with ruc: " + ruc)))
+            .map(customerMapper::getCustomerResponse);
     }
 
     @Override
     public Mono<CustomerResponse> findByDni(String dni) {
         return personalCustomerRepository.findByDocumentNumber(dni)
-                .switchIfEmpty(Mono.error(new CustomerNotFoundException("Customer not found with dni: " + dni)))
-                .map(customerMapper::getCustomerResponse)
-                .doOnError(e -> log.error("Error when trying to get customer by id"));
+            .switchIfEmpty(Mono.error(new CustomerNotFoundException("Customer not found with dni: " + dni)))
+            .map(customerMapper::getCustomerResponse)
+            .doOnError(e -> log.error("Error when trying to get customer by id"));
     }
 
     /**
      * Validates if the customer type is a valid enum value
+     *
      * @param request The customer request containing the type to validate
      * @return true if type is valid, false otherwise
      * @see CustomerType

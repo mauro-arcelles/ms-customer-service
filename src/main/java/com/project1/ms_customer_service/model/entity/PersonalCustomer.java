@@ -13,7 +13,9 @@ import org.springframework.data.annotation.TypeAlias;
 @TypeAlias("personalCustomer")
 public class PersonalCustomer extends Customer {
     private String documentNumber;
+
     private String firstName;
+
     private String lastName;
 
     @ValidPersonalSubType
