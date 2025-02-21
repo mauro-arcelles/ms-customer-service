@@ -6,27 +6,37 @@ import com.project1.ms_customer_service.model.CustomerPatchRequest;
 import com.project1.ms_customer_service.model.CustomerRequest;
 import com.project1.ms_customer_service.model.CustomerResponse;
 import com.project1.ms_customer_service.model.entity.*;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 
 @Component
 public class CustomerMapper {
+
+    @Value("${customer.config.personal.vip.avgDailyMinimumAmount}")
+    private BigDecimal personalVipAvgDailyMinimumAmount;
+
     public CustomerResponse getCustomerResponse(Customer customer) {
         CustomerResponse response = new CustomerResponse();
         response.setId(customer.getId());
         response.setType(customer.getType().name());
         response.setStatus(customer.getStatus().toString());
-        if (customer.getType().equals(CustomerType.PERSONAL)) {
+        if (customer instanceof PersonalCustomer) {
             PersonalCustomer personalCustomer = (PersonalCustomer) customer;
             response.setDocumentNumber(personalCustomer.getDocumentNumber());
             response.setFirstName(personalCustomer.getFirstName());
             response.setLastName(personalCustomer.getLastName());
-            response.setSubType(Optional.ofNullable(personalCustomer.getSubType())
-                .map(Object::toString)
-                .orElse(null));
         }
-        if (customer.getType().equals(CustomerType.BUSINESS)) {
+        if (customer instanceof PersonalVipCustomer) {
+            PersonalVipCustomer personalVipCustomer = (PersonalVipCustomer) customer;
+            if (personalVipCustomer.getSubType() != null) {
+                response.setSubType(personalVipCustomer.getSubType().toString());
+                response.setAvgDailyMinimumAmount(personalVipCustomer.getAvgDailyMinimumAmount());
+            }
+        }
+        if (customer instanceof BusinessCustomer) {
             BusinessCustomer businessCustomer = (BusinessCustomer) customer;
             response.setRuc(businessCustomer.getRuc());
             response.setSubType(Optional.ofNullable(businessCustomer.getSubType())
@@ -42,13 +52,26 @@ public class CustomerMapper {
         switch (type) {
             case PERSONAL:
                 com.project1.ms_customer_service.model.PersonalCustomer personalCustomer = (com.project1.ms_customer_service.model.PersonalCustomer) request;
+
+                if (personalCustomer.getSubType() != null) {
+                    return PersonalVipCustomer.builder()
+                        .type(CustomerType.PERSONAL)
+                        .documentNumber(personalCustomer.getDocumentNumber())
+                        .firstName(personalCustomer.getFirstName())
+                        .lastName(personalCustomer.getLastName())
+                        .status(CustomerStatus.ACTIVE)
+                        .subType(PersonalCustomerType.valueOf(personalCustomer.getSubType()))
+                        .avgDailyMinimumAmount(personalVipAvgDailyMinimumAmount)
+                        .build();
+                }
+
                 return PersonalCustomer.builder()
                     .type(CustomerType.PERSONAL)
                     .documentNumber(personalCustomer.getDocumentNumber())
                     .firstName(personalCustomer.getFirstName())
                     .lastName(personalCustomer.getLastName())
                     .status(CustomerStatus.ACTIVE)
-                    .subType(personalCustomer.getSubType() != null ? PersonalCustomerType.valueOf(personalCustomer.getSubType()) : null)
+                    .subType(null)
                     .build();
 
             case BUSINESS:
