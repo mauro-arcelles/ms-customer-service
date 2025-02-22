@@ -44,8 +44,8 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public Mono<CustomerResponse> findById(String id) {
         return customerRepository.findById(id)
-            .map(customerMapper::getCustomerResponse)
-            .switchIfEmpty(Mono.error(new CustomerNotFoundException("Customer not found with id: " + id)));
+            .switchIfEmpty(Mono.error(new CustomerNotFoundException("Customer not found with id: " + id)))
+            .map(customerMapper::getCustomerResponse);
     }
 
     @Override
