@@ -41,8 +41,8 @@ public class GlobalExceptionHandler {
                 .body("Internal Server Error"));
     }
 
-    @ExceptionHandler(CustomerNotFoundException.class)
-    public Mono<ResponseEntity<ResponseBase>> handleCustomerNotFoundException(Exception ex) {
+    @ExceptionHandler(NotFoundException.class)
+    public Mono<ResponseEntity<ResponseBase>> handleNotFoundException(Exception ex) {
         ResponseBase responseBase = new ResponseBase();
         responseBase.setMessage(ex.getMessage());
         return Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND)

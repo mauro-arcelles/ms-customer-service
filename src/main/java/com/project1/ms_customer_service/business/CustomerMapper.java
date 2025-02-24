@@ -83,7 +83,6 @@ public class CustomerMapper {
                     .status(CustomerStatus.ACTIVE)
                     .subType(businessCustomer.getSubType() != null ? BusinessCustomerType.valueOf(businessCustomer.getSubType()) : null)
                     .build();
-
             default:
                 throw new InvalidCustomerTypeException();
         }
@@ -104,8 +103,6 @@ public class CustomerMapper {
                 }
                 Optional.ofNullable(request.getBusinessName()).ifPresent(c -> ((BusinessCustomer) existingCustomer).setBusinessName(c));
                 break;
-            default:
-                throw new IllegalArgumentException("Invalid customer type");
         }
 
         return existingCustomer;

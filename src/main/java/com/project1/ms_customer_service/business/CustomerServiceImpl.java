@@ -1,8 +1,8 @@
 package com.project1.ms_customer_service.business;
 
 import com.project1.ms_customer_service.exception.BadRequestException;
-import com.project1.ms_customer_service.exception.CustomerNotFoundException;
 import com.project1.ms_customer_service.exception.InvalidCustomerTypeException;
+import com.project1.ms_customer_service.exception.NotFoundException;
 import com.project1.ms_customer_service.model.CustomerPatchRequest;
 import com.project1.ms_customer_service.model.CustomerRequest;
 import com.project1.ms_customer_service.model.CustomerResponse;
@@ -44,7 +44,7 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public Mono<CustomerResponse> findById(String id) {
         return customerRepository.findById(id)
-            .switchIfEmpty(Mono.error(new CustomerNotFoundException("Customer not found with id: " + id)))
+            .switchIfEmpty(Mono.error(new NotFoundException("Customer not found with id: " + id)))
             .map(customerMapper::getCustomerResponse);
     }
 
@@ -85,7 +85,7 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public Mono<CustomerResponse> update(String id, Mono<CustomerPatchRequest> request) {
         return customerRepository.findById(id)
-            .switchIfEmpty(Mono.error(new CustomerNotFoundException("Customer not found with id: " + id)))
+            .switchIfEmpty(Mono.error(new NotFoundException("Customer not found with id: " + id)))
             .flatMap(existingCustomer -> request
                 .flatMap(req -> customerRepository.save(customerMapper.getCustomerUpdateEntity(req, existingCustomer)))
                 .doOnSuccess(c -> log.info("Updated customer: {}", c.getId()))
@@ -96,7 +96,7 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public Mono<Void> delete(String id) {
         return customerRepository.findById(id)
-            .switchIfEmpty(Mono.error(new CustomerNotFoundException("Customer not found with id: " + id)))
+            .switchIfEmpty(Mono.error(new NotFoundException("Customer not found with id: " + id)))
             .flatMap(customer -> {
                 customer.setStatus(CustomerStatus.INACTIVE);
                 return customerRepository.save(customer);
@@ -108,14 +108,14 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public Mono<CustomerResponse> findByRuc(String ruc) {
         return businessCustomerRepository.findByRuc(ruc)
-            .switchIfEmpty(Mono.error(new CustomerNotFoundException("Customer not found with ruc: " + ruc)))
+            .switchIfEmpty(Mono.error(new NotFoundException("Customer not found with ruc: " + ruc)))
             .map(customerMapper::getCustomerResponse);
     }
 
     @Override
     public Mono<CustomerResponse> findByDni(String dni) {
         return personalCustomerRepository.findByDocumentNumber(dni)
-            .switchIfEmpty(Mono.error(new CustomerNotFoundException("Customer not found with dni: " + dni)))
+            .switchIfEmpty(Mono.error(new NotFoundException("Customer not found with dni: " + dni)))
             .map(customerMapper::getCustomerResponse)
             .doOnError(e -> log.error("Error when trying to get customer by id"));
     }
