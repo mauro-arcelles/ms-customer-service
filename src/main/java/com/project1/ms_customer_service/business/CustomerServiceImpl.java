@@ -15,13 +15,19 @@ import com.project1.ms_customer_service.repository.CustomerRepository;
 import com.project1.ms_customer_service.repository.PersonalCustomerRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.ReactiveRedisTemplate;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.Duration;
+
 @Service
 @Slf4j
 public class CustomerServiceImpl implements CustomerService {
+
+    private static final String CACHE_KEY = "customer:";
 
     @Autowired
     private CustomerRepository customerRepository;
@@ -35,6 +41,9 @@ public class CustomerServiceImpl implements CustomerService {
     @Autowired
     private PersonalCustomerRepository personalCustomerRepository;
 
+    @Autowired
+    private ReactiveRedisTemplate<String, CustomerResponse> redisTemplate;
+
     @Override
     public Flux<CustomerResponse> findAll() {
         return customerRepository.findAll()
@@ -43,10 +52,21 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public Mono<CustomerResponse> findById(String id) {
-        return customerRepository.findById(id)
-            .switchIfEmpty(Mono.error(new NotFoundException("Customer not found with id: " + id)))
-            .map(customerMapper::getCustomerResponse);
+        return redisTemplate.opsForValue().get(CACHE_KEY + id)
+            .doOnNext(cached -> log.info("Retrieved from cache: {}", id))
+            .switchIfEmpty(
+                customerRepository.findById(id)
+                    .doOnNext(db -> log.info("Retrieved from DB: {}", id))
+                    .switchIfEmpty(Mono.error(new NotFoundException("Customer not found with id: " + id)))
+                    .map(customerMapper::getCustomerResponse)
+                    .flatMap(customer ->
+                        redisTemplate.opsForValue()
+                            .set(CACHE_KEY + id, customer, Duration.ofMinutes(30))
+                            .thenReturn(customer)
+                    )
+            );
     }
+
 
     @Override
     public Mono<CustomerResponse> create(Mono<CustomerRequest> request) {
@@ -90,6 +110,10 @@ public class CustomerServiceImpl implements CustomerService {
                 .flatMap(req -> customerRepository.save(customerMapper.getCustomerUpdateEntity(req, existingCustomer)))
                 .doOnSuccess(c -> log.info("Updated customer: {}", c.getId()))
                 .map(customerMapper::getCustomerResponse)
+                .flatMap(response ->
+                    redisTemplate.opsForValue().delete(CACHE_KEY + id)
+                        .thenReturn(response)
+                )
             );
     }
 
@@ -101,6 +125,7 @@ public class CustomerServiceImpl implements CustomerService {
                 customer.setStatus(CustomerStatus.INACTIVE);
                 return customerRepository.save(customer);
             })
+            .then(redisTemplate.opsForValue().delete(CACHE_KEY + id))
             .then()
             .doOnSuccess(v -> log.info("Deleted customer: {}", id));
     }
