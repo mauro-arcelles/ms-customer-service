@@ -10,6 +10,7 @@ Spring Boot Webflux microservice that handles customer operations.
 - Reactive Mongodb
 - Openapi contract first
 - Swagger ui
+- Spring Redis
 
 ## Configuration
 Service connects to Config Server using:
