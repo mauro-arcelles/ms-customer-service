@@ -58,5 +58,6 @@ springdoc:
 ## Swagger
 http://localhost:8090/swagger-ui.html
 
-![ms-customer-service-v2-2025-02-11-193301](https://github.com/user-attachments/assets/203bbe02-e5dc-44fe-8ebe-fa8e3aea9444)
+![ms-customer-service-2025-03-14-155806](https://github.com/user-attachments/assets/a4db2bc7-c6b8-457f-9ffe-9ea7fcf0b6f3)
+
 
